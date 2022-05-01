@@ -197,36 +197,61 @@ app.post('/send-message', [
 app.post('/send-media', async (req, res) => {
   const number = phoneNumberFormatter(req.body.number);
   const caption = req.body.caption;
-  const fileUrl = req.body.file;
+  const fileUrl = req.files.file
 
   //const media = MessageMedia.fromFilePath('./sendimg.png');
   // const file = req.files.file;
   // const media = new MessageMedia(file.mimetype, file.data.toString('base64'), file.name);
-  let mimetype;
-  const attachment = await axios.get(fileUrl, {
+ /* let mimetype;
+  const attachment = await axios.get(fileUrl.url, {
     responseType: 'arraybuffer'
   }).then(response => {
     mimetype = response.headers['content-type'];
     return response.data.toString('base64');
   });
 
+  console.log("MIME:", mimetype)
 
-  const media = new MessageMedia(mimetype, attachment, 'downloaded-media');
+  const media = new MessageMedia(mimetype, attachment, fileUrl.name);
+  
+*/
+
+  if (!req.files) {
+    return res.status(400).send("No files were uploaded.");
+  }
+
+  const file = req.files.file;
+  let path = __dirname + "/uploads/" + file.name;
+
+  file.mv(path, (err) => {
+    if (err) {
+      console.log("errorA: ", err)
+      return res.status(500).send(err);
+    }
+    
+    const media = MessageMedia.fromFilePath(path);
+    client.sendMessage(number, media, {
+      caption: caption
+    }).then(response => {
+      res.status(200).json({
+        status: true,
+        response: response
+      });
+    }).catch(err => {
+      res.status(500).json({
+        status: false,
+        response: err
+      });
+    });
+
+
+  });
+
   
 
-  client.sendMessage(number, media, {
-    caption: caption
-  }).then(response => {
-    res.status(200).json({
-      status: true,
-      response: response
-    });
-  }).catch(err => {
-    res.status(500).json({
-      status: false,
-      response: err
-    });
-  });
+  
+
+  
 });
 
 const findGroupByName = async function(name) {
