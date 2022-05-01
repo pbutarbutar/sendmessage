@@ -199,7 +199,7 @@ app.post('/send-media', async (req, res) => {
   const caption = req.body.caption;
   const fileUrl = req.body.file;
 
-  // const media = MessageMedia.fromFilePath('./image-example.png');
+  //const media = MessageMedia.fromFilePath('./sendimg.png');
   // const file = req.files.file;
   // const media = new MessageMedia(file.mimetype, file.data.toString('base64'), file.name);
   let mimetype;
@@ -210,7 +210,9 @@ app.post('/send-media', async (req, res) => {
     return response.data.toString('base64');
   });
 
-  const media = new MessageMedia(mimetype, attachment, 'Media');
+
+  const media = new MessageMedia(mimetype, attachment, 'downloaded-media');
+  
 
   client.sendMessage(number, media, {
     caption: caption
